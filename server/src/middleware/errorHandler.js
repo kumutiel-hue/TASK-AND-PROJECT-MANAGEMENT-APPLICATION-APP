@@ -10,15 +10,21 @@ export function errorHandler(error, request, response, next) {
     return;
   }
 
-  const status =
-    error.status ||
-    (error.name === "ValidationError" || error.name === "CastError" ? 400 : 500);
+  const status = error.status ||
+    (error.code === 11000 ? 409 :
+      error.name === "ValidationError" || error.name === "CastError" ? 400 : 500);
 
   if (status >= 500) {
     console.error(error);
   }
 
   response.status(status).json({
-    message: status >= 500 ? "Internal server error" : error.message,
+    message: status >= 500
+      ? "Internal server error"
+      : error.code === 11000
+        ? error.keyPattern && error.keyPattern.email
+          ? "A record with this email already exists"
+          : "A record with the same unique value already exists"
+        : error.message,
   });
 }
