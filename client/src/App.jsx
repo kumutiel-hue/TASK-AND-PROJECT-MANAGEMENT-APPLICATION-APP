@@ -141,6 +141,15 @@ function SectionHeading({ title, action }) {
   );
 }
 
+function AppFooter({ auth = false }) {
+  return (
+    <footer className={`app-footer${auth ? " auth-footer" : ""}`}>
+      <span>© {new Date().getFullYear()} NexaFlow</span>
+      <span>Next-generation workflow management</span>
+    </footer>
+  );
+}
+
 function formatProjectDate(value) {
   if (!value) return "Not set";
   const date = new Date(`${value.slice(0, 10)}T00:00:00`);
@@ -1507,98 +1516,101 @@ function App() {
   if (!currentUser) {
     const registering = activePage === "Register";
     return (
-      <main className="auth-screen">
-        <a className="brand auth-brand" href="#/dashboard" aria-label="NexaFlow">
-          <span className="brand-mark"><Check size={19} strokeWidth={3} /></span>
-          <span>NexaFlow</span>
-        </a>
-        <section className="auth-card">
-          <p className="auth-tagline">Next-generation workflow management</p>
-          <p className="eyebrow">{registering ? "GET STARTED" : "WELCOME BACK"}</p>
-          <h1>{registering ? "Create your account" : "Sign in to NexaFlow"}</h1>
-          <p className="auth-description">
-            {registering
-              ? `Create an account to join ${currentWorkspaceName}.`
-              : "Enter your account details to continue to your workspace."}
-          </p>
+      <div className="auth-page">
+        <main className="auth-screen">
+          <a className="brand auth-brand" href="#/dashboard" aria-label="NexaFlow">
+            <span className="brand-mark"><Check size={19} strokeWidth={3} /></span>
+            <span>NexaFlow</span>
+          </a>
+          <section className="auth-card">
+            <p className="auth-tagline">Next-generation workflow management</p>
+            <p className="eyebrow">{registering ? "GET STARTED" : "WELCOME BACK"}</p>
+            <h1>{registering ? "Create your account" : "Sign in to NexaFlow"}</h1>
+            <p className="auth-description">
+              {registering
+                ? `Create an account to join ${currentWorkspaceName}.`
+                : "Enter your account details to continue to your workspace."}
+            </p>
 
-          {authError && <div className="api-notice offline auth-error" role="alert"><strong>{authError}</strong></div>}
+            {authError && <div className="api-notice offline auth-error" role="alert"><strong>{authError}</strong></div>}
 
-          <form className="auth-form" onSubmit={submitAuth}>
-            {registering && (
-              <label>
-                Full name
-                <input
-                  autoComplete="name"
-                  maxLength={100}
-                  onChange={(event) => setAuthForm({ ...authForm, name: event.target.value })}
-                  required
-                  value={authForm.name}
-                />
-              </label>
-            )}
-            <label>
-              Email address
-              <input
-                autoComplete="email"
-                maxLength={254}
-                onChange={(event) => setAuthForm({ ...authForm, email: event.target.value })}
-                required
-                type="email"
-                value={authForm.email}
-              />
-            </label>
-            <label>
-              Password
-              <input
-                autoComplete={registering ? "new-password" : "current-password"}
-                maxLength={128}
-                minLength={registering ? 8 : undefined}
-                onChange={(event) => setAuthForm({ ...authForm, password: event.target.value })}
-                required
-                type="password"
-                value={authForm.password}
-              />
-            </label>
-            {registering && (
-              <>
+            <form className="auth-form" onSubmit={submitAuth}>
+              {registering && (
                 <label>
-                  Confirm password
+                  Full name
                   <input
-                    autoComplete="new-password"
-                    maxLength={128}
-                    minLength={8}
-                    onChange={(event) => setAuthForm({ ...authForm, confirmPassword: event.target.value })}
+                    autoComplete="name"
+                    maxLength={100}
+                    onChange={(event) => setAuthForm({ ...authForm, name: event.target.value })}
                     required
-                    type="password"
-                    value={authForm.confirmPassword}
+                    value={authForm.name}
                   />
                 </label>
-                <p className="auth-hint">
-                  Use at least 8 characters. {invitationToken ? "Use the email address that received this invitation." : "Registration requires an invitation except during initial workspace setup."}
-                </p>
-              </>
-            )}
-            <button className="button button-primary auth-submit" disabled={authBusy} type="submit">
-              {authBusy ? "Please wait…" : registering ? "Create account" : "Sign in"}
-            </button>
-          </form>
+              )}
+              <label>
+                Email address
+                <input
+                  autoComplete="email"
+                  maxLength={254}
+                  onChange={(event) => setAuthForm({ ...authForm, email: event.target.value })}
+                  required
+                  type="email"
+                  value={authForm.email}
+                />
+              </label>
+              <label>
+                Password
+                <input
+                  autoComplete={registering ? "new-password" : "current-password"}
+                  maxLength={128}
+                  minLength={registering ? 8 : undefined}
+                  onChange={(event) => setAuthForm({ ...authForm, password: event.target.value })}
+                  required
+                  type="password"
+                  value={authForm.password}
+                />
+              </label>
+              {registering && (
+                <>
+                  <label>
+                    Confirm password
+                    <input
+                      autoComplete="new-password"
+                      maxLength={128}
+                      minLength={8}
+                      onChange={(event) => setAuthForm({ ...authForm, confirmPassword: event.target.value })}
+                      required
+                      type="password"
+                      value={authForm.confirmPassword}
+                    />
+                  </label>
+                  <p className="auth-hint">
+                    Use at least 8 characters. {invitationToken ? "Use the email address that received this invitation." : "Registration requires an invitation except during initial workspace setup."}
+                  </p>
+                </>
+              )}
+              <button className="button button-primary auth-submit" disabled={authBusy} type="submit">
+                {authBusy ? "Please wait…" : registering ? "Create account" : "Sign in"}
+              </button>
+            </form>
 
-          <p className="auth-switch">
-            {registering ? "Already have an account?" : "New to NexaFlow?"}
-            <button
-              onClick={() => {
-                setAuthError("");
-                navigateTo(registering ? "Login" : "Register");
-              }}
-              type="button"
-            >
-              {registering ? "Sign in" : "Create account"}
-            </button>
-          </p>
-          {registering && <p className="auth-workspace-note">Workspace members currently share the same projects, tasks, team, and calendar.</p>}
-        </section>
-      </main>
+            <p className="auth-switch">
+              {registering ? "Already have an account?" : "New to NexaFlow?"}
+              <button
+                onClick={() => {
+                  setAuthError("");
+                  navigateTo(registering ? "Login" : "Register");
+                }}
+                type="button"
+              >
+                {registering ? "Sign in" : "Create account"}
+              </button>
+            </p>
+            {registering && <p className="auth-workspace-note">Workspace members currently share the same projects, tasks, team, and calendar.</p>}
+          </section>
+        </main>
+        <AppFooter auth />
+      </div>
     );
   }
 
@@ -2950,6 +2962,7 @@ function App() {
           </section>
         )}
       </main>
+      <AppFooter />
       {projectModal && (
         <div className="modal-backdrop" role="presentation" onMouseDown={(event) => {
           if (event.target === event.currentTarget) setProjectModal(null);
