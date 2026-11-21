@@ -25,9 +25,19 @@ import {
   Wrench,
 } from "lucide-react";
 
-const API_BASE_URL = (
-  import.meta.env.VITE_API_URL || "http://localhost:5000"
-).replace(/\/$/, "");
+function getApiBaseUrl() {
+  const configuredUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, "");
+  if (configuredUrl) return configuredUrl;
+
+  const hostname = window.location.hostname;
+  const protocol = window.location.protocol === "https:" ? "https:" : "http:";
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
+    return "http://localhost:5000";
+  }
+  return `${protocol}//${hostname}:5000`;
+}
+
+const API_BASE_URL = getApiBaseUrl();
 function apiFetch(url, options = {}) {
   return fetch(url, { ...options, credentials: "include" });
 }
@@ -37,6 +47,7 @@ const NOTIFICATION_READ_STORAGE_KEY = "taskflow-read-notifications";
 const DEFAULT_SETTINGS = {
   profile: { name: "John Doe", email: "" },
   weekStartsOn: "Monday",
+  fontSize: "small",
   compactView: false,
   darkMode: false,
   notifications: {
@@ -407,6 +418,9 @@ function App() {
             email: typeof savedProfile.email === "string" ? savedProfile.email : DEFAULT_SETTINGS.profile.email,
           },
           weekStartsOn: parsed.weekStartsOn === "Sunday" ? "Sunday" : "Monday",
+          fontSize: ["small", "medium", "large"].includes(parsed.fontSize)
+            ? parsed.fontSize
+            : DEFAULT_SETTINGS.fontSize,
           compactView: parsed.compactView === true,
           darkMode: parsed.darkMode === true,
           notifications: {
@@ -1516,7 +1530,7 @@ function App() {
   if (!currentUser) {
     const registering = activePage === "Register";
     return (
-      <div className="auth-page">
+      <div className={`auth-page font-size-${settings.fontSize}`}>
         <main className="auth-screen">
           <a className="brand auth-brand" href="#/dashboard" aria-label="NexaFlow">
             <span className="brand-mark"><Check size={19} strokeWidth={3} /></span>
@@ -1615,7 +1629,7 @@ function App() {
   }
 
   return (
-    <div className={`app-shell${settings.compactView ? " compact-view" : ""}${settings.darkMode ? " dark-mode" : ""}`}>
+    <div className={`app-shell font-size-${settings.fontSize}${settings.compactView ? " compact-view" : ""}${settings.darkMode ? " dark-mode" : ""}`}>
       <aside className="sidebar">
         <a
           className="brand"
@@ -2713,6 +2727,18 @@ function App() {
                       <option>Sunday</option>
                     </select>
                     <small>This also changes the calendar layout.</small>
+                  </label>
+                  <label className="settings-select-field">
+                    Font size
+                    <select
+                      value={settings.fontSize}
+                      onChange={(event) => updateSettings({ fontSize: event.target.value })}
+                    >
+                      <option value="small">Small</option>
+                      <option value="medium">Default</option>
+                      <option value="large">Large</option>
+                    </select>
+                    <small>Adjust the size of text and interface elements.</small>
                   </label>
                   <label className="settings-toggle">
                     <span>

@@ -18,11 +18,24 @@ const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
+function isAllowedLocalOrigin(origin) {
+  if (process.env.NODE_ENV === "production") return false;
+  try {
+    const url = new URL(origin);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return false;
+    if (url.hostname === "localhost" || url.hostname === "127.0.0.1") return true;
+    return /^(10|192\.168)\./.test(url.hostname)
+      || /^172\.(1[6-9]|2\d|3[01])\./.test(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
 app.use(
   cors({
     credentials: true,
     origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.includes(origin) || isAllowedLocalOrigin(origin)) {
         callback(null, true);
         return;
       }
